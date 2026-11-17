@@ -1,0 +1,12 @@
+{
+  "name": "together-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "dev": "node preview.mjs",
+    "check": "node --check preview.mjs && node --check dist/app.js && node --check dist/events.js && node --check dist/client.js && node --check dist/config.js && node --test tests/*.test.js",
+    "test:db": "node tests/database.mjs"
+  }
+}

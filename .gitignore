@@ -1,0 +1,10 @@
+node_modules/
+.sites-local/
+*.log
+
+.env
+.env.*
+!.env.example
+.vercel/
+work/
+*.tgz

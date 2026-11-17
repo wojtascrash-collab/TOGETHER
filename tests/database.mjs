@@ -1,0 +1,35 @@
+import {pathToFileURL} from 'node:url';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const {PGlite}=await import(process.argv[2]?pathToFileURL(process.argv[2]).href:'@electric-sql/pglite');
+const db=new PGlite();
+const a='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',b='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',c='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+try{
+ await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;insert into auth.users values('${a}'),('${b}'),('${c}');`);
+ await db.exec(await readFile(new URL('../supabase/migrations/202611170001_events.sql',import.meta.url),'utf8'));
+ const as=async(id)=>db.exec(`reset role;set role authenticated;select set_config('request.jwt.claim.sub','${id}',false);`);
+ await as(a);
+ const values={title:'Spacer',description:'Wspólne spotkanie w parku',city:'Warszawa',location:'Brama parku',category:'Spacer',starts_at:'2099-01-01T10:00:00Z',capacity:2};
+ const id=(await db.query('select public.together_create_event($1::jsonb) as id',[JSON.stringify(values)])).rows[0].id;
+ await assert.rejects(db.query('insert into public.together_events(title) values ($1)',['bad']),/permission denied/);
+ await assert.rejects(db.query('update public.together_events set capacity=99'),/permission denied/);
+ await as(b);await db.query('select public.together_join_event($1)',[id]);await db.query('select public.together_join_event($1)',[id]);
+ let rows=(await db.query('select * from public.together_list_events()')).rows;
+ assert.equal(rows[0].attendee_count,2);assert.equal(rows[0].joined,true);assert.equal(rows[0].is_host,false);
+ await assert.rejects(db.query('delete from public.together_memberships'),/permission denied/);
+ await as(c);assert.equal((await db.query('select * from public.together_memberships')).rows.length,0);
+ await assert.rejects(db.query('select public.together_join_event($1)',[id]),/Brak wolnych/);
+ assert.equal((await db.query("select * from public.together_list_events('','', '',true)")).rows.length,0);
+ await as(b);await db.query('select public.together_leave_event($1)',[id]);await db.query('select public.together_leave_event($1)',[id]);
+ await as(c);await db.query('select public.together_join_event($1)',[id]);
+ await as(a);await assert.rejects(db.query('select public.together_leave_event($1)',[id]),/Organizator/);
+ assert.equal((await db.query("select * from public.together_list_events('Spacer','Warszawa','Spacer',true)")).rows.length,1);
+ assert.equal((await db.query("select * from public.together_list_events('missing')")).rows.length,0);
+ await assert.rejects(db.query('select public.together_create_event($1)',[JSON.stringify({...values,starts_at:'2000-01-01'})]),/przyszłą/);
+ await db.exec(`reset role;delete from auth.users where id='${c}'`);
+ assert.equal((await db.query('select attendee_count from public.together_events')).rows[0].attendee_count,1);
+ await db.exec("set role anon;select set_config('request.jwt.claim.sub','',false)");
+ await assert.rejects(db.query('select * from public.together_events'),/permission denied/);
+ await assert.rejects(db.query('select public.together_join_event($1)',[id]),/permission denied/);
+ console.log('PASS: migracja, RLS, właściciel, limit miejsc, powtórne dołączenie/wyjście, filtry, usunięcie konta, anonimowy dostęp.');
+}finally{await db.close();}
