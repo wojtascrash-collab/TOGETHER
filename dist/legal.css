@@ -1,0 +1,1 @@
+.legal-links{display:flex;justify-content:center;gap:16px;padding:10px}.legal-links button{border:0;background:none;text-decoration:underline;color:#5942b8}.legal-copy{white-space:pre-wrap;line-height:1.6;max-width:680px}.consent-dialog,dialog{max-width:min(720px,92vw);border:0;border-radius:18px;padding:24px;box-shadow:0 20px 80px #20154555}dialog::backdrop{background:#20154599}
