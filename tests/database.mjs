@@ -17,6 +17,7 @@ try{
  await db.exec("insert into auth.users values('77e80d4d-0afb-4ca8-94ec-c03da549dd2b')");
  await db.exec(await readFile(new URL('../supabase/migrations/202611180008_admin_moderation.sql',import.meta.url),'utf8'));
  await db.exec(await readFile(new URL('../supabase/migrations/202611190001_account_controls_antispam.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/202611200001_profile_prompts_notes_undo.sql',import.meta.url),'utf8'));
  const as=async(id)=>db.exec(`reset role;set role authenticated;select set_config('request.jwt.claim.sub','${id}',false);`);
  await as(a);
  const values={title:'Spacer',description:'Wspólne spotkanie w parku',city:'Warszawa',location:'Brama parku',category:'Spacer',starts_at:'2099-01-01T10:00:00Z',capacity:2};
@@ -96,13 +97,13 @@ try{
  await as(a);
  assert.equal((await db.query('select * from public.together_event_attendees($1)',[named])).rows.length,1);
  assert.equal((await db.query('select * from public.together_event_attendees($1)',[managed])).rows[0].display_name,'Uczestnik bez podanej nazwy');
- await db.query('select public.together_save_discovery_profile($1::jsonb)',[JSON.stringify({display_name:'Osoba A',city:'Warszawa',bio:'Lubię spacery i dobrą kawę.',interests:['spacer','kawa'],visible:true})]);
+ await db.query('select public.together_save_discovery_profile($1::jsonb)',[JSON.stringify({display_name:'Osoba A',city:'Warszawa',bio:'Lubię spacery i dobrą kawę.',interests:['spacer','kawa'],prompt_question:'Idealna niedziela to…',prompt_answer:'Spacer i kawa nad Wisłą.',visible:true})]);
  await as(b);await db.query('select public.together_save_discovery_profile($1::jsonb)',[JSON.stringify({display_name:'Osoba B',city:'Kraków',bio:'Chętnie poznam nowych ludzi.',interests:['muzyka','kultura'],visible:true})]);
- let cards=(await db.query('select * from public.together_discovery_cards(20)')).rows;assert.equal(cards.length,1);assert.deepEqual(Object.keys(cards[0]).sort(),['bio','city','display_name','interests']);
+ let cards=(await db.query('select * from public.together_discovery_cards(20)')).rows;assert.equal(cards.length,1);assert.equal(cards[0].prompt_answer,'Spacer i kawa nad Wisłą.');assert.ok(!('user_id' in cards[0]));
  await assert.rejects(db.query('select * from public.together_discovery_profiles'),/permission denied/);
- assert.equal((await db.query("select public.together_discovery_swipe('Osoba A','like') as result")).rows[0].result.matched,false);
- await as(a);assert.equal((await db.query("select public.together_discovery_swipe('Osoba B','like') as result")).rows[0].result.matched,true);
- let matches=(await db.query('select * from public.together_my_matches()')).rows;assert.equal(matches.length,1);assert.equal(matches[0].display_name,'Osoba B');assert.ok(!('user_id' in matches[0]));
+ assert.equal((await db.query("select public.together_discovery_swipe('Osoba A','like','Świetny pomysł na niedzielę!') as result")).rows[0].result.matched,false);
+ await as(a);assert.equal((await db.query("select public.together_discovery_swipe('Osoba B','pass') as result")).rows[0].result.matched,false);assert.equal((await db.query('select public.together_undo_last_pass() as ok')).rows[0].ok,true);assert.equal((await db.query('select public.together_undo_last_pass() as ok')).rows[0].ok,false);assert.equal((await db.query("select public.together_discovery_swipe('Osoba B','like','Masz ciekawe zainteresowania.') as result")).rows[0].result.matched,true);
+ let matches=(await db.query('select * from public.together_my_matches()')).rows;assert.equal(matches.length,1);assert.equal(matches[0].display_name,'Osoba B');assert.equal(matches[0].received_note,'Świetny pomysł na niedzielę!');assert.ok(!('user_id' in matches[0]));
  const matchId=matches[0].match_id;await db.query('select public.together_send_message($1,$2)',[matchId,'Cześć!']);assert.equal((await db.query('select * from public.together_match_messages($1)',[matchId])).rows[0].mine,true);
  await as(b);assert.equal((await db.query('select * from public.together_match_messages($1)',[matchId])).rows[0].mine,false);await db.query("select public.together_block_person('Osoba A')");assert.equal((await db.query('select * from public.together_my_matches()')).rows.length,0);assert.equal((await db.query('select * from public.together_my_blocks()')).rows[0].display_name,'Osoba A');await assert.rejects(db.query('select public.together_send_message($1,$2)',[matchId,'test']),/match unavailable|blocked/);await db.query("select public.together_unblock_person('Osoba A')");assert.equal((await db.query('select * from public.together_my_blocks()')).rows.length,0);
  await as(c);assert.equal((await db.query('select * from public.together_my_matches()')).rows.length,0);

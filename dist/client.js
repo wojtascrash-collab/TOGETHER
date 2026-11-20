@@ -44,15 +44,17 @@ export function createTogetherClient({url,key,fetcher=fetch,storage=sessionStora
     async readNotification(id){return authorized('/rest/v1/rpc/together_read_notification',{method:'POST',body:{p_notification_id:id}});},
     async myDiscoveryProfile(){const rows=await authorized('/rest/v1/rpc/together_my_discovery_profile',{method:'POST',body:{}});return rows?.[0]||null;},
     async saveDiscoveryProfile(profile){
-      const clean={...profile,display_name:String(profile?.display_name||'').trim(),city:String(profile?.city||'').trim(),bio:String(profile?.bio||'').trim(),interests:[...new Set((profile?.interests||[]).map(x=>String(x).trim()).filter(Boolean))]};
+      const clean={...profile,display_name:String(profile?.display_name||'').trim(),city:String(profile?.city||'').trim(),bio:String(profile?.bio||'').trim(),prompt_question:String(profile?.prompt_question||'').trim(),prompt_answer:String(profile?.prompt_answer||'').trim(),interests:[...new Set((profile?.interests||[]).map(x=>String(x).trim()).filter(Boolean))]};
       if(clean.display_name.length<2||clean.display_name.length>40)throw new ApiError('Nazwa widoczna musi mieć od 2 do 40 znaków.',400,'display_name_invalid');
       if(clean.city.length<2||clean.city.length>80)throw new ApiError('Nazwa miasta musi mieć od 2 do 80 znaków.',400,'city_invalid');
       if(clean.bio.length<10||clean.bio.length>500)throw new ApiError('Opis „O mnie” musi mieć od 10 do 500 znaków, nie licząc spacji na początku i końcu.',400,'bio_invalid');
       if(clean.interests.length<1||clean.interests.length>8)throw new ApiError('Podaj od 1 do 8 zainteresowań, oddzielonych przecinkami.',400,'interests_invalid');
+      if(Boolean(clean.prompt_question)!==Boolean(clean.prompt_answer)||clean.prompt_question.length>100||clean.prompt_answer.length>240)throw new ApiError('Wybierz pytanie i wpisz odpowiedź (maksymalnie 240 znaków) albo pozostaw oba pola puste.',400,'prompt_invalid');
       try{return await authorized('/rest/v1/rpc/together_save_discovery_profile',{method:'POST',body:{p_profile:clean}});}catch(e){if(e?.code==='23505'&&String(e.message).includes('together_discovery_display_name_ci'))throw new ApiError('Ta nazwa jest już zajęta. Wybierz inną nazwę widoczną.',409,'display_name_taken');if(e?.code==='23514'&&String(e.message).includes('bio_check'))throw new ApiError('Opis „O mnie” musi mieć od 10 do 500 znaków.',400,'bio_invalid');throw e;}
     },
     async discoveryCards({city='',interest=''}={}){const rows=await authorized('/rest/v1/rpc/together_discovery_cards',{method:'POST',body:{p_limit:20,p_city:city.trim(),p_interest:interest.trim()}});return Array.isArray(rows)?rows:[];},
-    async discoverySwipe(displayName,decision){return authorized('/rest/v1/rpc/together_discovery_swipe',{method:'POST',body:{p_display_name:displayName,p_decision:decision}});},
+    async discoverySwipe(displayName,decision,note=''){const clean=String(note||'').trim();if(clean.length>150)throw new ApiError('Notatka może mieć maksymalnie 150 znaków.',400,'note_invalid');return authorized('/rest/v1/rpc/together_discovery_swipe',{method:'POST',body:{p_display_name:displayName,p_decision:decision,p_note:decision==='like'?clean:''}});},
+    async undoLastPass(){return Boolean(await authorized('/rest/v1/rpc/together_undo_last_pass',{method:'POST',body:{}}));},
     async myMatches(){const rows=await authorized('/rest/v1/rpc/together_my_matches',{method:'POST',body:{}});return Array.isArray(rows)?rows:[];},
     async myConsent(){const rows=await authorized('/rest/v1/rpc/together_my_consent',{method:'POST',body:{}});return rows?.[0]||null;},
     acceptRules:()=>authorized('/rest/v1/rpc/together_accept_rules',{method:'POST',body:{p_adult:true,p_terms_version:'2026-11-18',p_privacy_version:'2026-11-18'}}),
