@@ -1,11 +1,12 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {validateEvent,createEventsController} from '../dist/events.js';
+import {validateEvent,createEventsController,eventShareText} from '../dist/events.js';
 import {createTogetherClient} from '../dist/client.js';
 const values={title:' Spacer ',description:'Wspólny spacer po parku',city:' Warszawa ',location:'Brama parku',category:'Spacer',starts_at:'2099-10-20T14:30:00Z',capacity:'8'};
 test('event validation trims fields, normalizes UTC and includes host capacity',()=>{const e=validateEvent(values);assert.equal(e.city,'Warszawa');assert.equal(e.title,'Spacer');assert.equal(e.starts_at,'2099-10-20T14:30:00.000Z');assert.equal(e.capacity,8);});
 test('invalid and past dates, capacity and oversized payload fail before request',()=>{for(const edit of [{starts_at:'bad'},{starts_at:'2000-01-01'},{capacity:1},{capacity:101},{capacity:2.5},{title:'x'},{description:'x'},{city:''},{category:'invalid'},{title:'a'.repeat(101)}])assert.throws(()=>validateEvent({...values,...edit}));});
 test('impossible calendar date is rejected instead of silently normalized',()=>{assert.throws(()=>validateEvent({...values,starts_at:'2099-02-31T12:00'}),/nie istnieje/);});
+test('shared plan contains public event details but no private participant data',()=>{const text=eventShareText({...values,host_id:'secret',participant_email:'private@example.test'});assert.match(text,/Spacer/);assert.match(text,/Warszawa/);assert.match(text,/Brama parku/);assert.doesNotMatch(text,/secret|private@example|uczestnik/i);});
 test('late search response never overwrites newer results',async()=>{let first;const rendered=[];const c=createEventsController({listEvents:({query})=>query==='a'?new Promise(r=>first=r):Promise.resolve(['new'])},{render:r=>rendered.push(r),report:assert.fail});const old=c.load({query:'a'});await c.load({query:'b'});first(['old']);await old;assert.deepEqual(rendered,[['new']]);});
 test('logout discards in-flight events and failed network stays an error',async()=>{let resolve;const rendered=[],errors=[];const c=createEventsController({listEvents:()=>new Promise(r=>resolve=r)},{render:r=>rendered.push(r),report:e=>errors.push(e)});const pending=c.load();c.clear();resolve(['private']);await pending;assert.deepEqual(rendered,[[]]);const d=createEventsController({listEvents:async()=>{throw Error('offline');}},{render:assert.fail,report:e=>errors.push(e)});await d.load();assert.equal(errors.length,1);});
 const token={access_token:'access',refresh_token:'refresh',expires_at:9999999999};
@@ -16,3 +17,4 @@ test('full-event server rejection is propagated instead of reported as joined',a
 test('no session means no membership request',async()=>{let count=0;const api=createTogetherClient({url:'test',key:'public',storage:{getItem:()=>null},fetcher:()=>count++});await assert.rejects(api.joinEvent('id'),/Zaloguj/);assert.equal(count,0);});
 test('named signup submits only chosen alias and event ID, never profile data',async()=>{const {api,calls}=client(()=>new Response('null'));await api.joinEventNamed('event',' Pseudonim ');assert.deepEqual(JSON.parse(calls[0].opts.body),{p_event_id:'event',p_display_name:'Pseudonim'});});
 test('roster access denial is propagated, never rendered as empty success',async()=>{const {api}=client(()=>new Response(JSON.stringify({message:'Tylko organizator',code:'42501'}),{status:403}));await assert.rejects(api.eventAttendees('event'),e=>e.status===403&&e.code==='42501');});
+

@@ -2,7 +2,7 @@ import {createNotificationInbox} from './notifications.js';
 import {createDiscovery} from './discovery.js';
 import {createSafety} from './safety.js';
 import {createAdminPanel} from './admin.js';
-import {createEventsController} from './events.js';
+import {createEventsController,eventShareText} from './events.js';
 import {SUPABASE_URL,SUPABASE_KEY} from './config.js';
 import {createTogetherClient} from './client.js';
 import {enableInstall} from './pwa.js';
@@ -34,6 +34,7 @@ function renderEvents(rows){
   for(const row of rows){const card=document.createElement('article');card.className='event-card';
     const add=(tag,text,cls)=>{const el=document.createElement(tag);el.textContent=text;if(cls)el.className=cls;card.append(el);};
     add('span',row.category,'event-category');add('h3',row.title);add('p',new Intl.DateTimeFormat('pl-PL',{dateStyle:'medium',timeStyle:'short'}).format(new Date(row.starts_at))+' · '+row.city);add('p',row.location);add('p',row.description,'event-description');add('p',row.attendee_count+' / '+row.capacity+' osób · '+(row.cancelled_at?'ODWOŁANE':row.is_host?'Organizujesz':row.joined?'Dołączono':'Zapisy otwarte'),'event-meta');
+    const share=document.createElement('button');share.type='button';share.className='secondary';share.textContent='Udostępnij plan';share.onclick=()=>shareEvent(row).catch(e=>notify(message(e),true));card.append(share);
     if(row.is_host&&!row.cancelled_at){
       const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Edytuj spotkanie';edit.onclick=()=>editEvent(row);card.append(edit);
       const cancel=document.createElement('button');cancel.type='button';cancel.className='secondary';cancel.textContent='Odwołaj spotkanie';cancel.onclick=()=>{if(!confirm('Odwołać spotkanie „'+row.title+'”? Zapisy zostaną zamknięte, a uczestnicy zobaczą status Odwołane.'))return;busy(card,async()=>{await events.cancel(row.id);if(editingEvent===row.id)resetEventForm();notify('Spotkanie odwołane. Historia zapisów została zachowana.');await loadEvents();});};card.append(cancel);
@@ -43,6 +44,7 @@ function renderEvents(rows){
   }
 }
 function showJoinForm(row,card){if(card.querySelector('form'))return;const form=document.createElement('form');const label=document.createElement('label');label.textContent='Nazwa widoczna tylko dla organizatora';const input=document.createElement('input');input.required=true;input.minLength=2;input.maxLength=60;input.name='display_name';input.autocomplete='off';input.placeholder='Np. Ania lub wybrany pseudonim';label.append(input);const note=document.createElement('p');note.className='fine';note.textContent='Podając nazwę i potwierdzając zapis, udostępnisz ją organizatorowi tego spotkania. Nie pobieramy danych z Twojego prywatnego profilu.';const submit=document.createElement('button');submit.type='submit';submit.className='primary';submit.textContent='Potwierdź dołączenie';const cancel=document.createElement('button');cancel.type='button';cancel.className='text-button';cancel.textContent='Anuluj zapis';cancel.onclick=()=>form.remove();form.append(label,note,submit,cancel);form.onsubmit=e=>{e.preventDefault();busy(card,async()=>{await events.joinNamed(row.id,input.value);notify('Dołączono do spotkania. Wybrana nazwa jest widoczna dla organizatora.');await loadEvents();});};card.append(form);input.focus();}
+async function shareEvent(row){const text=eventShareText(row),url=location.origin+'/';if(navigator.share){try{await navigator.share({title:'TOGETHER — '+row.title,text,url});return;}catch(e){if(e.name==='AbortError')return;}}await navigator.clipboard.writeText(text+'\n'+url);notify('Plan spotkania skopiowany. Możesz wkleić go zaufanej osobie w wybranym komunikatorze.');}
 $('search-form').onsubmit=e=>{e.preventDefault();busy($('search-form'),loadEvents);};
 function resetEventForm(){editingEvent=null;$('event-form').reset();$('event-form').querySelector('[type="submit"]').textContent='Utwórz spotkanie ↗';$('stop-editing')?.remove();$('create-details').open=false;}
 function editEvent(row){editingEvent=row.id;const form=$('event-form');for(const name of ['title','description','city','location','category','capacity'])form.elements.namedItem(name).value=row[name];const d=new Date(row.starts_at);form.elements.namedItem('starts_at').value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);form.querySelector('[type="submit"]').textContent='Zapisz zmiany ↗';if(!$('stop-editing')){const b=document.createElement('button');b.id='stop-editing';b.type='button';b.className='secondary';b.textContent='Anuluj edycję';b.onclick=resetEventForm;form.append(b);}$('create-details').open=true;form.scrollIntoView({behavior:'smooth',block:'center'});form.elements.namedItem('title').focus();}
@@ -55,3 +57,4 @@ boot();
 
 setInterval(()=>{if(user && document.visibilityState==='visible')inbox?.load();},30000);
 document.addEventListener('visibilitychange',()=>{if(user && document.visibilityState==='visible')inbox?.load();});
+

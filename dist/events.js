@@ -10,6 +10,11 @@ export function validateEvent(values, now=Date.now()) {
   return {title:text('title',3,100),description:text('description',10,2000),city:text('city',2,80),location:text('location',3,160),category,starts_at:starts.toISOString(),capacity};
 }
 
+export function eventShareText(event) {
+  const when=new Intl.DateTimeFormat('pl-PL',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Warsaw'}).format(new Date(event.starts_at));
+  return ['Plan spotkania TOGETHER',event.title,when,event.city+' · '+event.location,event.cancelled_at?'Status: odwołane':'Szczegóły i zapisy w aplikacji TOGETHER'].join('\n');
+}
+
 export function createEventsController(api,{render,report}) {
   let revision=0, filters={query:'',city:'',category:'',mine:false};
   return {
@@ -24,3 +29,4 @@ export function createEventsController(api,{render,report}) {
     async leave(id){await api.leaveEvent(id);}
   };
 }
+

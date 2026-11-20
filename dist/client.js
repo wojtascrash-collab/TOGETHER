@@ -56,6 +56,7 @@ export function createTogetherClient({url,key,fetcher=fetch,storage=sessionStora
       try{return await authorized('/rest/v1/rpc/together_save_discovery_profile',{method:'POST',body:{p_profile:clean}});}catch(e){if(e?.code==='23505'&&String(e.message).includes('together_discovery_display_name_ci'))throw new ApiError('Ta nazwa jest już zajęta. Wybierz inną nazwę widoczną.',409,'display_name_taken');if(e?.code==='23514'&&String(e.message).includes('bio_check'))throw new ApiError('Opis „O mnie” musi mieć od 10 do 500 znaków.',400,'bio_invalid');throw e;}
     },
     async discoveryCards({city='',interest=''}={}){const rows=await authorized('/rest/v1/rpc/together_discovery_cards',{method:'POST',body:{p_limit:20,p_city:city.trim(),p_interest:interest.trim()}});return Array.isArray(rows)?rows:[];},
+    async setVisibilityMode(mode){if(!['public','incognito','hidden'].includes(mode))throw new ApiError('Wybierz poprawny tryb widoczności.',400,'visibility_mode_invalid');return authorized('/rest/v1/rpc/together_set_visibility_mode',{method:'POST',body:{p_mode:mode}});},
     async discoverySwipe(displayName,decision,note=''){const clean=String(note||'').trim();if(clean.length>150)throw new ApiError('Notatka może mieć maksymalnie 150 znaków.',400,'note_invalid');return authorized('/rest/v1/rpc/together_discovery_swipe',{method:'POST',body:{p_display_name:displayName,p_decision:decision,p_note:decision==='like'?clean:''}});},
     async undoLastPass(){return Boolean(await authorized('/rest/v1/rpc/together_undo_last_pass',{method:'POST',body:{}}));},
     async setDiscoveryLocation(lat,lng){return authorized('/rest/v1/rpc/together_set_discovery_location',{method:'POST',body:{p_lat:lat,p_lng:lng}});},
@@ -87,3 +88,4 @@ export function createTogetherClient({url,key,fetcher=fetch,storage=sessionStora
     async auditRead(user,otherId){if(!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(otherId)||otherId.toLowerCase()===user.id.toLowerCase())throw new Error('Wpisz poprawny identyfikator innego konta.');const own=await authorized('/rest/v1/profiles?select=id');if(!Array.isArray(own))throw new Error('Nieprawidłowa odpowiedź bazy.');const leaked=own.some(row=>row.id!==user.id);const rows=await authorized('/rest/v1/profiles?select=id&id=eq.'+encodeURIComponent(otherId));if(!Array.isArray(rows))throw new Error('Nieprawidłowa odpowiedź bazy.');return {leaked:leaked||rows.length>0,ownVisible:own.some(row=>row.id===user.id)};}
   };
 }
+
