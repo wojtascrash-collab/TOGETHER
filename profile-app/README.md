@@ -11,3 +11,7 @@ Przeglądarka przygotowuje miniaturę 160 × 160 px do 24 KiB. Najpierw próbuje
 3. Po zatwierdzeniu publikacji wydaj trzy pliki aplikacji na Vercel. Plik SQL i dokumentacja nie należą do paczki wdrożeniowej.
 
 Punkt przywracania Vercel to `dpl_A7JKKP2FucUPxPUGQ6Y6CUmjxYch`. Po pojawieniu się zapisanych JPEG starsza wersja nie wyświetli ich poprawnie. W takim wypadku wersja przywracana powinna zachować odczyt JPEG. Przywrócenie starego ograniczenia bazy jest możliwe dopiero po potwierdzeniu braku JPEG. Nie usuwaj zdjęć w ramach przywracania.
+
+## Wynik wdrożenia
+
+21 listopada 2026 r. poprawka trafiła na produkcję w Vercel (`dpl_4cm5kfutQmPKXQvvibg4WH8DCErS`). Potwierdzono, że produkcja udostępnia poprawiony kod i że baza przyjmuje prawidłowy JPEG. Użytkownik potwierdził zapis zdjęcia profilowego na fizycznym iPhonie.
