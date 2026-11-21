@@ -1,5 +1,12 @@
 # TOGETHER — zadania
 
+## Zdjęcie profilowe w Safari na iPhonie — 21 listopada 2026
+
+- [x] Użytkownik potwierdził na fizycznym iPhonie, że w Safari da się zapisać zdjęcie profilowe z galerii. Po wylogowaniu i ponownym zalogowaniu zdjęcie nadal było widoczne.
+- [x] Próbę wykonano w podglądzie wersji MVP połączonym z projektem Supabase `TOGETHER-odzyskiwanie-test` (`ocivlnwgwxqsrqpadfsu`). Osobny test w Chrome potwierdził zapis WebP i awaryjny zapis JPEG. W próbie na iPhonie nie ustalono, którego formatu użyła przeglądarka.
+- [x] Po próbie usunięto konto testowe wraz z profilem i zdjęciem zapisanym w polu `public.profiles.avatar_webp`. Odczyt bazy potwierdził usunięcie konta, profilu i wpisu logowania. Tabele zachowano, a liczby spotkań i zapisów na spotkania wynosiły po 0 przed i po operacji.
+- [x] Próba i usunięcie danych odbyły się w projekcie testowym. Produkcja pozostała bez zmian.
+
 ## Przygotowanie do szerszych testów — 18 listopada 2026
 - [x] Odzyskiwanie hasła przez e-mail Supabase oraz ekran ustawienia nowego hasła po powrocie z linku.
 - [x] Obowiązkowe potwierdzenie pełnoletności i akceptacji wersji regulaminu/polityki prywatności zapisywane na koncie.
