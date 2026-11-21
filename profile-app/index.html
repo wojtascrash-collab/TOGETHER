@@ -1,0 +1,58 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>TOGETHER | Spotykajmy się</title><style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#18212f;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #e9edf3}.wrap{width:min(1100px,calc(100% - 36px));margin:auto}.nav{height:76px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:24px;font-weight:900;letter-spacing:-1px}.brand span{color:#6655ec}.nav small{color:#7c8798}.hero{background:linear-gradient(120deg,#191e45,#5942b8);color:#fff;padding:65px 0 74px}.hero h1{font-size:clamp(34px,5vw,58px);line-height:1.05;letter-spacing:-2px;margin:0 0 20px;max-width:720px}.hero p{font-size:18px;line-height:1.6;max-width:600px;color:#dbd7fa}.pill{display:inline-block;padding:8px 12px;background:#ffffff20;border:1px solid #ffffff32;border-radius:100px;font-size:12px;margin-bottom:18px}.btn{border:0;border-radius:12px;background:#6553ed;color:white;padding:14px 19px;font-weight:750;cursor:pointer;font-size:14px}.btn:hover{filter:brightness(1.08)}.btn.alt{background:#fff;color:#4535bb}.btn.out{background:#f0edff;color:#5140c8}.btn.danger{background:#ffe8ea;color:#a92e3d}.hero .btn{margin-top:12px}.section{padding:42px 0}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}.top h2{margin:0;font-size:27px;letter-spacing:-.6px}.hint{color:#7a8495;font-size:14px}.filters{display:flex;gap:8px;overflow:auto;padding:20px 0 26px}.filter{border:1px solid #e1e6ef;border-radius:99px;padding:10px 16px;background:#fff;color:#495366;white-space:nowrap;cursor:pointer}.filter.active{background:#252052;color:#fff;border-color:#252052}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.card{background:#fff;border:1px solid #e8ebf1;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px #24315708}.art{height:125px;display:flex;align-items:center;justify-content:center;font-size:55px;background:linear-gradient(135deg,#e3deff,#ecf6ff)}.content{padding:22px}.tag{color:#6351de;font-size:12px;font-weight:800;text-transform:uppercase}.card h3{margin:9px 0;font-size:21px}.meta{color:#6e788a;font-size:14px;line-height:1.9}.bottom{display:flex;align-items:center;justify-content:space-between;margin-top:19px;gap:8px}.empty{grid-column:1/-1;background:white;padding:40px;text-align:center;border-radius:16px;color:#697489}.notice{margin:20px 0;background:#fff5da;color:#7b5a19;padding:13px 18px;border-radius:12px;font-size:13px}.foot{border-top:1px solid #e4e7ef;padding:25px 0;color:#8a92a0;font-size:13px}dialog{border:0;border-radius:20px;box-shadow:0 25px 100px #11182755;padding:28px;width:min(460px,calc(100% - 24px))}dialog::backdrop{background:#0b1024aa}form{display:grid;gap:12px}label{font-size:13px;font-weight:750}input,select,textarea{width:100%;border:1px solid #dfe3ed;border-radius:10px;padding:12px;font:inherit}textarea{min-height:75px;resize:vertical}.formhead{display:flex;justify-content:space-between;align-items:center}.x{background:none;border:0;font-size:26px;cursor:pointer}.actions{display:flex;gap:10px}.actions button{flex:1}.success{background:#e6fbf2;color:#137953;padding:10px 15px;border-radius:10px;margin-top:16px} @media(max-width:850px){.cards{grid-template-columns:repeat(2,1fr)}}@media(max-width:580px){.cards{grid-template-columns:1fr}.hero{padding:46px 0}.nav small{display:none}}
+.event-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+#participantsDialog .formhead { display: flex; }
+#participantsDialog h2 { margin: 0; }
+#participantsTitle { font-weight: 750; }
+.participants-list { display: grid; gap: 8px; padding: 0; list-style: none; }
+.participants-list li { display: grid; gap: 4px; padding: 10px 12px; background: #f5f7fb; border-radius: 10px; }
+.participants-list code { overflow-wrap: anywhere; }
+.participants-list span { font-size: 13px; color: #495366; }
+
+.participants-list li { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
+.participant-label { display: grid; gap: 4px; overflow-wrap: anywhere; }
+.participant-avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #ece8ff; color: #5140c8; }
+.participant-avatar img, .participant-avatar .avatar-fallback { grid-area: 1 / 1; }
+.participant-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.participant-avatar .avatar-fallback { font-size: 16px; font-weight: 800; color: #5140c8; }
+.profile-avatar { width: 72px; height: 72px; }
+.profile-avatar .avatar-fallback { font-size: 24px; }
+#profileForm p { margin: 0; }
+.nav { gap: 8px; }
+@media(max-width:580px) { .nav { height:auto; padding:12px 0; display:flex; flex-wrap:wrap; justify-content:flex-start; } .nav .btn { padding:10px 12px; } }
+</style></head>
+<body><header><div class="wrap nav"><div class="brand">TO<span>GETHER</span> ✦</div><small id="account">Spotkania online • MVP 0.2</small><button class="btn out" id="login">Zaloguj się</button><button class="btn out" id="profileOpen" type="button" aria-haspopup="dialog" hidden>Mój profil</button><button class="btn out" id="logout" hidden>Wyloguj</button><button class="btn" onclick="openForm()">+ Dodaj spotkanie</button></div></header><section class="hero"><div class="wrap"><div class="pill">✨ Mniej scrollowania. Więcej prawdziwych spotkań.</div><h1>Najlepsze historie zaczynają się poza ekranem.</h1><p>Znajdź wspólny trening, kawę, wyjazd albo stwórz własny plan. Ludzie, miejsca i przygody w jednym miejscu.</p><button class="btn alt" onclick="openForm()">Zorganizuj coś razem →</button></div></section>
+<main class="wrap section"><div class="top"><div><h2>Co robimy razem?</h2><div class="hint">Wybierz aktywność, która Cię interesuje</div></div><div class="hint" id="count"></div></div><div class="notice">Spotkania są zapisywane online. Zaloguj się, aby organizować spotkania i dołączać do innych.</div><button class="btn out" id="refresh">Odśwież spotkania</button><div id="filters" class="filters"></div><div id="cards" class="cards"></div><div id="alert" role="status" aria-live="polite"></div></main><footer class="foot"><div class="wrap">TOGETHER © 2026 · Pierwszy prototyp produktu</div></footer>
+<dialog id="dlg"><form id="eventForm"><div class="formhead"><h2>Nowe spotkanie</h2><button class="x" type="button" onclick="document.getElementById('dlg').close()" aria-label="Zamknij">×</button></div><label for="title">Nazwa spotkania</label><input id="title" name="title" maxlength="70" required placeholder="Np. Trening na siłowni"><label for="category">Kategoria</label><select id="category" name="category"><option>Sport</option><option>Kawa</option><option>Wyjazdy</option><option>Rozrywka</option><option>Inne</option></select><label for="place">Miejsce</label><input id="place" name="place" maxlength="70" required placeholder="Np. Zielona Góra"><label for="date">Termin</label><input type="datetime-local" id="date" name="date" required><label for="detail">Opis (opcjonalnie)</label><textarea id="detail" name="detail" maxlength="250" placeholder="Co planujesz?"></textarea><div class="actions"><button type="button" class="btn out" onclick="document.getElementById('dlg').close()">Anuluj</button><button type="submit" class="btn">Opublikuj spotkanie</button></div></form></dialog>
+<dialog id="authDialog"><form id="authForm"><div class="formhead"><h2>Twoje konto</h2><button class="x" type="button" onclick="document.getElementById('authDialog').close()" aria-label="Zamknij">×</button></div><label for="email">E-mail</label><input id="email" type="email" required autocomplete="email"><label for="password">Hasło (minimum 8 znaków)</label><input id="password" type="password" required minlength="8" autocomplete="current-password"><div class="actions"><button class="btn" type="submit" value="signin">Zaloguj się</button><button class="btn out" type="submit" value="signup">Utwórz konto</button></div><p id="authMessage" role="status" aria-live="polite"></p></form></dialog>
+<dialog id="profileDialog" aria-labelledby="profileTitle">
+  <form id="profileForm">
+    <div class="formhead">
+      <h2 id="profileTitle">Mój profil</h2>
+      <button class="x" type="button" aria-label="Zamknij profil" onclick="this.closest('dialog').close()">×</button>
+    </div>
+    <p class="hint">Nazwę i zdjęcie zobaczą organizatorzy spotkań, na które się zapiszesz. Możesz użyć pseudonimu.</p>
+    <div id="profilePhotoPreview" class="participant-avatar profile-avatar"></div>
+    <label for="displayName">Nazwa wyświetlana</label>
+    <input id="displayName" type="text" maxlength="40" placeholder="Np. Kasia">
+    <label for="profilePhoto">Zdjęcie profilowe</label>
+    <input id="profilePhoto" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="profilePhotoHint">
+    <span id="profilePhotoHint" class="hint">JPEG, PNG lub WebP do 5 MB.</span>
+    <div class="actions">
+      <button class="btn out" id="profileRemove" type="button">Usuń zdjęcie</button>
+      <button class="btn" id="profileSave" type="submit">Zapisz profil</button>
+    </div>
+    <p id="profileStatus" role="status"></p>
+  </form>
+</dialog>
+<dialog id="participantsDialog" aria-labelledby="participantsHeading" aria-describedby="participantsTitle">
+  <form method="dialog" class="formhead">
+    <h2 id="participantsHeading">Uczestnicy</h2>
+    <button class="x" aria-label="Zamknij listę uczestników" autofocus>×</button>
+  </form>
+  <p id="participantsTitle"></p>
+  <p id="participantsStatus" role="status"></p>
+  <ul id="participantsList" class="participants-list"></ul>
+  <button class="btn out" id="participantsMore" type="button" hidden>Pokaż więcej</button>
+</dialog>
+<script type="module" src="/app.js"></script></body></html>
